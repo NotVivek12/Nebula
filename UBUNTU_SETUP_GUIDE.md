@@ -85,6 +85,7 @@ To connect Nebula to WhatsApp, follow these steps on the [Meta Developer Portal]
 1. In the left menu under WhatsApp, click **Configuration**.
 2. Under the Webhooks section, click **Edit**.
 3. **Callback URL**: `https://<YOUR_DOMAIN>/api/v1/webhooks/whatsapp`
+   > **💡 Tip for Local Testing:** Meta requires a public HTTPS URL. If you are testing locally on your laptop, you cannot use `http://localhost`. Instead, use a tunneling service like [ngrok](https://ngrok.com/). Run `ngrok http 8000` in a new terminal, and use the provided HTTPS URL here (e.g., `https://a1b2c3d4.ngrok-free.app/api/v1/webhooks/whatsapp`).
 4. **Verify Token**: Enter the exact string you placed in `WHATSAPP_VERIFY_TOKEN` in your `.env` file.
 5. Click **Verify and Save**. (If Nebula is running and exposed correctly, Meta will send a challenge request and Nebula will automatically respond and verify it).
 
