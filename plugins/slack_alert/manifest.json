@@ -1,0 +1,7 @@
+{
+  "name": "slack_alert",
+  "version": "1.0.0",
+  "entry_point": "main.py",
+  "description": "Example plugin sending status alerts to slack channels.",
+  "permissions": ["integrations:write"]
+}

@@ -1,0 +1,8 @@
+line-length = 120
+target-version = "py311"
+
+[lint]
+# B008: function-call-in-default-argument — intentional in FastAPI Depends()
+# E501: line-too-long at 120 chars (relaxed from default 88)
+ignore = ["B008", "E501"]
+select = ["E", "F", "W", "B", "I"]

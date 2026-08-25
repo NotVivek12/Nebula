@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nebula-api
+  namespace: default
+  labels:
+    app: nebula-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nebula-api
+  template:
+    metadata:
+      labels:
+        app: nebula-api
+    spec:
+      containers:
+      - name: api
+        image: nebula-api:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8000
+        envFrom:
+        - configMapRef:
+            name: nebula-config
+        resources:
+          limits:
+            cpu: "1"
+            memory: 1024Mi
+          requests:
+            cpu: 250m
+            memory: 512Mi
+        livenessProbe:
+          httpGet:
+            path: /api/v1/health
+            port: 8000
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /api/v1/health
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nebula-service
+  namespace: default
+spec:
+  selector:
+    app: nebula-api
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8000
+  type: ClusterIP
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nebula-config
+  namespace: default
+data:
+  PROJECT_NAME: "Nebula AI Platform"
+  API_V1_STR: "/api/v1"
+  POSTGRES_SERVER: "postgres-service"
+  POSTGRES_DB: "nebula"
+  REDIS_HOST: "redis-service"
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: nebula-hpa
+  namespace: default
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: nebula-api
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 75

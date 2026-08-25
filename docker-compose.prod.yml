@@ -1,0 +1,44 @@
+# Nebula production stack overrides
+# Usage: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+
+services:
+  web:
+    # Remove development volume mount so the container uses baked-in code
+    volumes: []
+    environment:
+      - ENVIRONMENT=production
+    # Only expose to localhost or reverse proxy, not public 0.0.0.0
+    ports:
+      - "127.0.0.1:8000:8000"
+    # Use gunicorn as production ASGI server supervisor
+    command: gunicorn app.main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
+
+  worker:
+    volumes: []
+    environment:
+      - ENVIRONMENT=production
+    # Scale up workers or adjust concurrency for production
+    command: celery -A app.workers.celery_app:celery_app worker --loglevel=info --concurrency=8 -Q default,ai_processing,outbound_messages,workflow_execution
+
+  # Production databases should ideally be managed services (RDS, ElastiCache, Qdrant Cloud),
+  # but if self-hosting, ensure proper resource limits are set
+  db:
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: "2.0"
+  
+  redis:
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: "1.0"
+
+  qdrant:
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+          cpus: "2.0"
