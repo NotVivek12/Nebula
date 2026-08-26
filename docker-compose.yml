@@ -24,7 +24,9 @@ services:
       redis:
         condition: service_healthy
       qdrant:
-        condition: service_healthy
+        # The official Qdrant image does not ship curl, so Docker healthchecks
+        # that exec curl inside the container produce false "unhealthy" states.
+        condition: service_started
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health/live"]
@@ -92,11 +94,6 @@ services:
       - "6334:6334"
     volumes:
       - qdrant_data:/qdrant/storage
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:6333/readyz"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
 volumes:
   postgres_data:
